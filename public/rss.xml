@@ -9,12 +9,12 @@
       <atom:link href="https://www.nathanielmott.com/rss.xml" rel="self" type="application/rss+xml"/>
       <lastBuildDate>Mon, 03 Jul 2023 00:00:00 +0000</lastBuildDate>
       <item>
-          <title>test</title>
+          <title>switching to a static site</title>
           <pubDate>Mon, 03 Jul 2023 00:00:00 +0000</pubDate>
           <author>Unknown</author>
-          <link>https://www.nathanielmott.com/test/</link>
-          <guid>https://www.nathanielmott.com/test/</guid>
-          <description>&lt;p&gt;This is just a test.&lt;&#x2F;p&gt;
+          <link>https://www.nathanielmott.com/switching-to-a-static-site/</link>
+          <guid>https://www.nathanielmott.com/switching-to-a-static-site/</guid>
+          <description>&lt;p&gt;I&#x27;ve used Ghost to host my personal site for a while, but I&#x27;d prefer to have more control over how the site looks than Ghost was willing to give me on the basic plan, and wanted to experiment with a terminal-focused workflow. So here we are.&amp;quot;&lt;&#x2F;p&gt;
 </description>
       </item>
     </channel>
