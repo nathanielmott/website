@@ -1,5 +1,5 @@
 # The URL the site will be built for
-base_url = "https://website-mu-woad.vercel.app/"
+base_url = "https://www.nathanielmott.com"
 theme = "terminimal"
 generate_feed = true
 feed_filename = "rss.xml"

@@ -1,4 +1,4 @@
 User-agent: *
 Disallow:
 Allow: /
-Sitemap: https://nathanielmott.com/sitemap.xml
+Sitemap: https://www.nathanielmott.com/sitemap.xml
