@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+      <title></title>
+      <link>https://nathanielmott.com</link>
+      <description></description>
+      <generator>Zola</generator>
+      <language>en</language>
+      <atom:link href="https://nathanielmott.com/rss.xml" rel="self" type="application/rss+xml"/>
+      <lastBuildDate>Mon, 03 Jul 2023 00:00:00 +0000</lastBuildDate>
+      <item>
+          <title>test</title>
+          <pubDate>Mon, 03 Jul 2023 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://nathanielmott.com/test/</link>
+          <guid>https://nathanielmott.com/test/</guid>
+          <description>&lt;p&gt;This is just a test.&lt;&#x2F;p&gt;
+</description>
+      </item>
+    </channel>
+</rss>
