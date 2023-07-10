@@ -7,7 +7,17 @@
       <generator>Zola</generator>
       <language>en</language>
       <atom:link href="https://www.nathanielmott.com/rss.xml" rel="self" type="application/rss+xml"/>
-      <lastBuildDate>Mon, 03 Jul 2023 00:00:00 +0000</lastBuildDate>
+      <lastBuildDate>Mon, 10 Jul 2023 00:00:00 +0000</lastBuildDate>
+      <item>
+          <title>putting the &#x27;personal&#x27; in computer</title>
+          <pubDate>Mon, 10 Jul 2023 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://www.nathanielmott.com/putting-the-personal-in-computer/</link>
+          <guid>https://www.nathanielmott.com/putting-the-personal-in-computer/</guid>
+          <description>&lt;p&gt;&lt;em&gt;tl;dr: you should happen to the computer; the computer shouldn&#x27;t happen to you&lt;&#x2F;em&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;I recently made two seemingly unrelated decisions: switching to Linux and building my own keyboard. While the exact motivations behind these changes vary, at their core, both were prompted by a desire for greater agency.&lt;&#x2F;p&gt;
+</description>
+      </item>
       <item>
           <title>switching to a static site</title>
           <pubDate>Mon, 03 Jul 2023 00:00:00 +0000</pubDate>

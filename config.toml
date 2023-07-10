@@ -19,8 +19,11 @@ highlight_code = true
 # Put all your custom variables here
 accent_color = "pink"
 logo_text = "nathaniel_mott"
-page_titles = "combined"
+page_titles = "main_only"
 author = "Nathaniel Mott"
+
+enable_post_view_navigation = false
+post_view_navigation_prompt = ""
 
 menu_items = [
     # each of these is optional, name and url are required
