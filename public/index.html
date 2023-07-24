@@ -73,87 +73,16 @@
         <div class="post-content">
             <p><em>tl;dr: started at the top, went to the bottom, now we're here. wherever that is.</em></p>
 <p>I've spent the last few weeks writing a basic port of the <code>stat</code> command in Rust and Zig. Throughout several iterations of this utility, which has reached the &quot;I'm willing to discuss this in public&quot; stage but not the &quot;I'm willing to post the source code&quot; stage, I've had to confront a difficult question: Rust or Zig?</p>
-<h2 id="variable-scope">variable scope</h2>
-<p>This utility initially combined a word counter (similar to <code>wc</code>) and <code>stat</code> in a single tool. It seemed like the kind of thing I'd find useful, and it also required me to learn about parsing arguments in command line utilities, accessing file metadata, and formatting that data into something a human might want to read.</p>
-<p>The fundamental problem with this approach is that any method I've found of counting words, lines, and paragraphs changes the time a file was last accessed. This means half the utility (<code>stat</code>) was undermined by the other half (<code>wc</code>) and I've yet to find a solution to this problem that isn't &quot;accept inaccuracies with that field.&quot;</p>
-<blockquote>
-<p>Okay. I'm realizing as I type this that I could gather the &quot;accessed&quot; field before the file's contents are read, save that information somewhere, then display the saved information rather than the new information until a new timestamp is recorded.But that would be significantly more complicated than what I currently have.</p>
-</blockquote>
-<p>So eventually I shifted to &quot;<code>stat</code> but with only the fields I care about.&quot; (Those being the times when a file was created, modified, or accessed.) Huzzah!</p>
-<h2 id="where-zig-and-rust-differ">where zig and rust differ</h2>
-<p>Spoilers: Gathering and presenting this information in the user's local timezone is significantly easier in Rust and requires approximately half as many lines of code.But I learned a lot more developing the Zig version of the tool.</p>
-<p>Both versions of this utility rely on their respective standard libraries and a crate/module for managing dates. That's because Rust and Zig both rely on the <code>stat</code> syscall--not to be confused with the command line utility of the same name!--to access file metadata. (At least on Linux; let's not discuss Windows just yet.)</p>
-<p>Unfortunately for me, the <code>stat</code> syscall doesn't return the times a file was created, modified, or accessed in a human-readable format. Instead, you get a 128-bit integer representing the number of milliseconds since the Unix epoch time. That means I have to turn the result into something a person can understand.</p>
-<p>This is what that code looks like in Rust using the chrono crate:</p>
-<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>    let created: DateTime&lt;Local&gt; =
-</span><span>        DateTime::from(metadata.created().expect(&quot;couldn&#39;t get created&quot;));
-</span><span>    let formatted_created_time = format!(&quot;{}&quot;, created.format(&quot;%m/%d/%Y %H:%M&quot;));
-</span><span>
-</span></code></pre>
-<p>(Let's ignore the fact that I'm not properly handling optionals or errors there. The important thing is that I was able to specify I wanted the local time.)</p>
-<p>This is what the code looks like in Zig:</p>
-<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>    let formatted_created_time = format!(&quot;{}&quot;, created.format(&quot;%m/%d/%Y %H:%M&quot;));
-</span><span>    const created_local = Datetime.shiftTimezone(created_datetime, &amp;system_tz);
-</span><span>    const created_formatted = try Datetime.formatHttp(created_local, allocator);
-</span></code></pre>
-<p>Except that doesn't show all the work I had to do to get that &quot;system_tz.&quot; That requires a modification to the zig-datetime module I made after reading through the Zig standard library, RFC-8536, and compilation errors for over a day. This is the combination of functions that allows me to get the system timezone on Linux:</p>
-<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>    const system_tz: Timezone = try chrono.get_system_timezone(allocator);
-</span><span>
-</span><span>    pub fn get_system_timezone(allocator: std.mem.Allocator) !Timezone {
-</span><span>    const system_time = std.time.timestamp();
-</span><span>    const tzfile = try std.fs.cwd().openFile(&quot;/etc/localtime&quot;, .{});
-</span><span>    const tzinfo = try std.Tz.parse(allocator, tzfile.reader());
-</span><span>    var current_timetype: std.tz.Timetype = undefined;
-</span><span>
-</span><span>    for (tzinfo.transitions, 0..) |transition, idx| {
-</span><span>        if (transition.ts &gt; 0 and system_time &lt; transition.ts) {
-</span><span>            current_timetype = tzinfo.transitions[idx - 1].timetype.*;
-</span><span>            break;
-</span><span>        }
-</span><span>    }
-</span><span>
-</span><span>    const name = current_timetype.name();
-</span><span>    const offset: i16 = @intCast(@divFloor(current_timetype.offset, 60));
-</span><span>
-</span><span>    const System = Timezone.create(name, offset);
-</span><span>    return System;
-</span><span>}
-</span></code></pre>
-<p>This: </p>
-<ol>
-<li>Gets a timestamp of the current system time</li>
-<li>Finds and reads the TZif file symlinked to from /etc/localtime</li>
-<li>Determines which &quot;transition&quot; is active</li>
-<li>Returns the name of the timezone and the offset from UTC</li>
-</ol>
-<p>(Oh, and the name doesn't actually work, presumably because I haven't figured out how to explicitly declare those three bytes as the format Zig uses for strings.)</p>
-<p>All of which is to say that it took me several days and several times as many lines of code to accomplish the same result in Zig that I did in Rust.</p>
-<p>And I fucking loved it.</p>
-<h2 id="casting-fireball-versus-using-a-wand-of-fireballs">casting fireball versus using a wand of fireballs</h2>
-<p>I'm working on a separate blog post about this, but lately I've been trying to learn programming. I've had several kinda-sorta-failed attempts in the past that left me with a passing knowledge of assignments, control flow, etc. But each time I've felt more like I'm using a magic item, in D&amp;D parlance, than casting a spell myself.</p>
-<p>Rust's solution feels more like using a magic item. Zig's solution--even though I'm still largely depending on the standard library and zig-datetime module--feels a lot more like I'm learning how to cast a spell. Consider that I had to:</p>
-<ol>
-<li>Learn how Linux programs check the currently active timezone</li>
-<li>Learn how to extract that information from a TZif file</li>
-<li>Combine that information with a fairly opinionated existing module</li>
-<li>Do all this while also handling allocators, a lack of macros, etc.</li>
-</ol>
-<p>I definitely learned a lot more writing the Zig version of this utility than the Rust version. That was important for this step of my journey to learn programming, and a large part of me would like to stick with Zig for the foreseeable future, especially since I'm not worried about finding a job or anything like that.</p>
-<p>But.</p>
-<h2 id="ziggy-without-the-stardust">ziggy without the stardust</h2>
-<p>There's no denying that Rust has an advantage when it comes to the developer ecosystem and tooling. Zig is making progress on this front--an official package manager will debut with the formal release of version 0.11 in August--but wrangling with dependencies and the build system is significantly more complex than in Rust.</p>
-<p>Zig also has a lot fewer learning resources (though I've found Ziglings particularly useful) and the documentation isn't quite to Rust's standard. That's to be expected! Zig is significantly younger than Rust, hasn't reached version 1.0, and sees regular updates between major point upgrades. This iguana's always evolving.</p>
-<p>But there's a difference between learning how a particular function, syscall, or paradigm works and trying to figure out how the fuck I'm supposed to use the Zig package manager. (Or, failing that, use a Git submodule in a way that makes both my primary Git repository and the Zig build system happy with me.)</p>
-<p>Contrast that with the wonders of <code>cargo add</code> and <code>cargo build</code> and it's hard not to think the grass is greener on Rust's side of the fence--even though I generally prefer Zig's syntax, the option to learn more about memory management, and the fact that the resulting binary is a quarter the size even though it's not dynamically linked to a number of libraries like the Rust version of this utility is.</p>
-<h2 id="so-where-do-i-go-from-here">so where do i go from here?</h2>
-<p>I told my wife earlier that I almost wish I'd waited another couple of years to get into programming for the Nth time. By then I expect that Zig would've ironed out the problems with its package manager, introduced even more features, and finalized the much-needed switch to using snake-case for standard library functions. (Heh.)</p>
-<p>Right now I'm not sure what to do. On the one hand, Zig offers a more bottom-up approach to learning that resonates with me, and I could probably devote some of the time I'd spend exploring other subjects to understanding its build system. On the other hand, Rust would allow me to focus on those other subjects instead.</p>
-<p>Part of me wants to continue developing projects in both languages. I'm not on any particular deadlines; I'm prioritizing learning over being productive. But I also know my brain, and it doesn't like undue hassle, especially when it knows there are alternative solutions just a &quot;.rs&quot; instead of a &quot;.zig&quot; away.</p>
-<p>At the moment I'm leaning towards developing in Rust while keeping pace with Zig updates and potentially supporting the project in other ways. (Money. I mean with money.) This isn't my preferred solution due to the binary sizes, dynamic linking,and fugly syntax, but at least I won't have to struggle with the build system.</p>
-<p>Then again, maybe I'll give learning the Zig build system and package management another week or so, especially since the official 0.11 release isn't that far away.</p>
-<p>Gah!</p>
 
         </div>
+        <div>
+            <!-- &#xFE0E; -- force text style - some devices render this as emoji -->
+            <a class="read-more button" href="https://www.nathanielmott.com/rust-or-zig-july-2023-idk/">
+                <span class="button__text">Read more</span>&nbsp;
+                <span class="button__icon">&#8617;&#xFE0E;</span>
+            </a>
+        </div>
+    
 
                 </div>
             

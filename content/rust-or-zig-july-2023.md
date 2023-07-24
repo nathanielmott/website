@@ -9,6 +9,8 @@ slug = "rust-or-zig-july-2023-idk"
 
 I've spent the last few weeks writing a basic port of the `stat` command in Rust and Zig. Throughout several iterations of this utility, which has reached the "I'm willing to discuss this in public" stage but not the "I'm willing to post the source code" stage, I've had to confront a difficult question: Rust or Zig?
 
+<!-- more -->
+
 ## variable scope
 
 This utility initially combined a word counter (similar to `wc`) and `stat` in a single tool. It seemed like the kind of thing I'd find useful, and it also required me to learn about parsing arguments in command line utilities, accessing file metadata, and formatting that data into something a human might want to read.
