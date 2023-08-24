@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title></title>
+    
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+    <meta name="robots" content="noodp"/>
+
+    <link rel="stylesheet" href="https://www.nathanielmott.com/style.css">
+    <link rel="stylesheet" href="https://www.nathanielmott.com/color/pink.css">
+
+        <link rel="stylesheet" href="https://www.nathanielmott.com/color/background_blue.css">
+    
+    <link rel="stylesheet" href="https://www.nathanielmott.com/font-hack-subset.css">
+
+            <link rel="alternate" type="application/rss+xml" title="RSS" href="https://www.nathanielmott.com/rss.xml">
+    
+    </head>
+
+<body class="">
+<div class="container">
+    
+    <header class="header">
+        <div class="header__inner">
+            <div class="header__logo">
+                    
+                <a href="https://www.nathanielmott.com" style="text-decoration: none;">
+                    <div class="logo">
+                      
+                            nathaniel_mott
+                        
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        
+        
+                <nav class="menu">
+            <ul class="menu__inner">
+                <li class="active"><a href="https://www.nathanielmott.com">blog</a></li>
+            
+                <li><a href="https://www.nathanielmott.com/archive">archive</a></li>
+            
+                <li><a href="https://www.nathanielmott.com/about">about</a></li>
+            </ul>
+        </nav>
+    
+    
+        
+    </header>
+    
+
+    <div class="content">
+        
+    <div class="post">
+        
+    <h1 class="post-title"><a href="https://www.nathanielmott.com/thinkin-bout-helix-and-neovim/">thinkin&#x27; bout helix and neovim</a></h1>
+    <div class="post-meta-inline">
+        
+    <span class="post-date">
+            2023-08-24
+        </span>
+
+    </div>
+
+    
+
+        
+        <div class="post-content">
+            <p><em>tl;dr: whoever thought a text editor should be configured in lua was mad</em></p>
+<p>I've been using Helix for the last few months, and for the most part, it's great. Configuring it with Rust, Zig, and Markdown has been a snap. Changing various settings to suit my preferences has been a breeze. Launching it with the beloved &quot;hx&quot; command has been a third metaphor for a thing being easy. And, most importantly, Helix's approach to manipulating text makes far more sense to me than Vim and NeoVim's does.</p>
+<p>And yet.</p>
+<span id="continue-reading"></span>
+<p>In the course of writing that paragraph, I've already used a NeoVim feature that Helix doesn't offer, at least at time of writing: spell checking. (And, by extension, the ability to add specific words to &quot;the list of words NeoVim won't complain about.) Soon I'll set up others--including a file tree, an integrated terminal, and more--that either haven't been added to Helix yet or show no signs of ever being added to the editor.</p>
+<p>This feels like my difficulty with choosing between Zig and Rust. One is an up-and-comer that makes a lot of smart choices (or, at least, choices that seem like the ones I would make) and the other is an established utility that can be used to get shit done even if there are pain points aplenty. When it came to Zig and Rust, I chose the latter. Now I'm looking to see if I'll do the same with NeoVim and Helix.</p>
+<p>Let's talk about why I'm in this position.</p>
+<h2 id="selection-verb-verb-selection">'selection-verb' &gt; 'verb-selection'</h2>
+<p>Helix operations work by selecting a chunk of text--be it a word, line, or some other unit--and then acting upon it. If I want to delete a specific word, for example, I type &quot;w&quot; to select it and &quot;d&quot; to delete it. This is exactly how I've already thought about the problem--I saw a word that I wanted to delete so I deleted it.</p>
+<p>NeoVim works in the opposite direction. If I want to delete a specific word, I type &quot;d&quot; to delete something and then &quot;w&quot; to make it clear that I want to delete the word under my cursor. This strikes me as somewhat nonsensical and error-prone (thank goodness &quot;undo&quot; is just a &quot;u&quot; away!) but it's a control NeoVim inherited from its predecessor so whatever.</p>
+<p>I'm sure that some people learning a modal editor will naturally prefer the latter approach, and that it's not just nostalgia or muscle memory preventing them from embracing Helix's approach, but I suspect that's a small portion of the population. Helix's approach is more logical, less error-prone, and my favorite by far.</p>
+<h2 id="editing-toml-writing-lua">editing toml &gt; writing lua</h2>
+<p>Imagine telling someone they would have to familiarize themselves with a whole-ass programming language just to make Microsoft Word suit their preferences. You'd be laughed out of the room, and I'd put the odds of someone actually doing that at zero.</p>
+<p>I don't think many of those people would prefer to use a markup language, but at least some would be more willing to do that than learn Lua. (I'm currently learning Rust, and even I prefer configuring Helix with TOML over configuring NeoVim with Lua.)</p>
+<p>I've experimented with a few NeoVim configs. NvChad is nice, and I might end up going back to it at some point, but I found that the way the project was set up made it far too frustrating to update to suit my own preferences. LazyVim is easier to configure in some ways, but only because it hides a lot of options away, and that can be frustrating too.</p>
+<p>(See <a href="https://www.youtube.com/watch?v=aiSI6vdZWgE">this</a> video from Luke Pighetti to show just how stark the difference between configuring NeoVim and Helix can be.)</p>
+<h2 id="but-where-is-the-goddamn-file-tree">but where is the goddamn file tree?</h2>
+<p>Or, &quot;that complexity affords additional features that I'm looking for.&quot;</p>
+<p>NeoVim doesn't feature a file tree by default; neither does Helix. The difference is that at least two NeoVim plugins offer easy access to a file tree; exactly zero Helix plugins do the same. Because there are no Helix plugins. What you see is what you get.</p>
+<p>This &quot;batteries included&quot; approach is great--until you want to do something that requires additional batteries. Then you can either submit a pull request that either A) won't be approved or B) will take quite a while to make its way into a stable release or... you can decide that feature isn't that important to your workflow after all.</p>
+<blockquote>
+<p>I just now realized this also applies to Zig and Rust. The former has a &quot;batteries included&quot; standard library that I really appreciate, but when it's time to use something that doesn't exist within the standard library, your options are incredibly limited. Rust has an anemic standard library that allows popular crate maintainers to hold many Rust devs hostage to support an RFC that's over a year in the making, but at least those options are available! Between &quot;make your own battery&quot; and &quot;go to the battery store,&quot; at least for now, I'm pretty much stuck with the latter.</p>
+</blockquote>
+<p>So NeoVim has a file tree. And I prefer the way it shows errors / warnings from my LSP. And it has spell checking. And I can experiment with other plugins that seem like they could improve my current workflow. All I have to do is go to the battery store.</p>
+<p>Do I want to go to the battery store? No. Do I want to have to learn a new language because it's the only way to install those goddamn batteries? Not really! But I want some of these batteries, damn it, so I'm going to have to at least make an effort.</p>
+<blockquote>
+<p>Which, again, just like Zig and Rust. Ugh.</p>
+</blockquote>
+<h2 id="so-where-do-i-go-from-here">so where do i go from here?</h2>
+<p>I'm going to devote a day--an entire goddamn day, or at least as much of one as I possibly can--to setting up NeoVim and getting my brain used to Vim motions instead of Helix motions. After that, I'll continue to evaluate NeoVim, then I'll make a decision.</p>
+<p>I suspect I'll end up where I am with Zig and Rust: Longing for the day the former is ready for me, but accepting the latter in the meantime, and perhaps learning to love it along the way.</p>
+
+        </div>
+
+        
+        <div class="pagination">
+            <div class="pagination__title">
+                <span class="pagination__title-h"></span>
+                <hr />
+            </div>
+            <div class="pagination__buttons">
+                    <span class="button previous">
+                        <a href="https://www.nathanielmott.com/what-does-multiclass-into-wizard-mean-anyway/">
+                            <span class="button__icon">←</span>&nbsp;
+                            <span class="button__text">what does &#x27;multiclass into wizard&#x27; mean, anyway?</span>
+                        </a>
+                    </span>
+                
+                </div>
+        </div>
+    
+    </div>
+
+    </div>
+
+    
+    <footer class="footer">
+        <div class="footer__inner">
+                <div class="copyright">
+                        <span>© 
+    2023
+ Nathaniel Mott</span>
+                    <span class="copyright-theme">
+                        <span class="copyright-theme-sep">:: </span>
+                        Theme: <a href="https://github.com/pawroman/zola-theme-terminimal/">Terminimal</a> by pawroman
+                    </span>
+                </div>
+            </div>
+    </footer>
+    
+
+</div>
+</body>
+
+</html>
