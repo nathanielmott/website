@@ -13,7 +13,7 @@ slug = "introducing-scry-a-magical-stat-clone"
 
 ## how it started
 
-`scry` began as a combiniation of `stat` and `wc` intended to help me familiarize myself with Rust. It didn't take long to have an initial prototype (Rust's standard library provides most of the necessary functions) but I quickly identified a problem: getting the word, line, and paragraph counts from a file counted as "accessing" it. There was no way for me to "stat" the file without messing with the results.
+`scry` began as a combination of `stat` and `wc` intended to help me familiarize myself with Rust. It didn't take long to have an initial prototype (Rust's standard library provides most of the necessary functions) but I quickly identified a problem: getting the word, line, and paragraph counts from a file counted as "accessing" it. There was no way for me to "stat" the file without messing with the results.
 
 I originally solved this problem by having the word counting occur *after* the stat call. This kinda worked, but only if I was fine with the data being messed up afterwards. So then I broke the `stat` and `wc` clones up into arguments; that way I would only mess with the data if I was truly committed to getting those counts.
 
