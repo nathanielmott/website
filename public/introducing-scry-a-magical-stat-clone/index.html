@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title></title>
+    
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+    <meta name="robots" content="noodp"/>
+
+    <link rel="stylesheet" href="https://www.nathanielmott.com/style.css">
+    <link rel="stylesheet" href="https://www.nathanielmott.com/color/pink.css">
+
+        <link rel="stylesheet" href="https://www.nathanielmott.com/color/background_blue.css">
+    
+    <link rel="stylesheet" href="https://www.nathanielmott.com/font-hack-subset.css">
+
+            <link rel="alternate" type="application/rss+xml" title="RSS" href="https://www.nathanielmott.com/rss.xml">
+    
+    </head>
+
+<body class="">
+<div class="container">
+    
+    <header class="header">
+        <div class="header__inner">
+            <div class="header__logo">
+                    
+                <a href="https://www.nathanielmott.com" style="text-decoration: none;">
+                    <div class="logo">
+                      
+                            nathaniel_mott
+                        
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        
+        
+                <nav class="menu">
+            <ul class="menu__inner">
+                <li class="active"><a href="https://www.nathanielmott.com">blog</a></li>
+            
+                <li><a href="https://www.nathanielmott.com/archive">archive</a></li>
+            
+                <li><a href="https://www.nathanielmott.com/about">about</a></li>
+            </ul>
+        </nav>
+    
+    
+        
+    </header>
+    
+
+    <div class="content">
+        
+    <div class="post">
+        
+    <h1 class="post-title"><a href="https://www.nathanielmott.com/introducing-scry-a-magical-stat-clone/">introducing scry: a magical stat(1) clone</a></h1>
+    <div class="post-meta-inline">
+        
+    <span class="post-date">
+            2023-09-16
+        </span>
+
+    </div>
+
+    
+
+        
+        <div class="post-content">
+            <p><em>tl;dr: i made a simple command-line tool!</em></p>
+<p><code>scry</code> is, as the title suggests, a magical <code>stat(1)</code> clone. This post outlines the beginning of the project, how <code>scry</code> differs from <code>stat</code>, and where I plan to go from here.</p>
+<span id="continue-reading"></span><h2 id="how-it-started">how it started</h2>
+<p><code>scry</code> began as a combiniation of <code>stat</code> and <code>wc</code> intended to help me familiarize myself with Rust. It didn't take long to have an initial prototype (Rust's standard library provides most of the necessary functions) but I quickly identified a problem: getting the word, line, and paragraph counts from a file counted as &quot;accessing&quot; it. There was no way for me to &quot;stat&quot; the file without messing with the results.</p>
+<p>I originally solved this problem by having the word counting occur <em>after</em> the stat call. This kinda worked, but only if I was fine with the data being messed up afterwards. So then I broke the <code>stat</code> and <code>wc</code> clones up into arguments; that way I would only mess with the data if I was truly committed to getting those counts.</p>
+<p>This was...fine. <code>scry</code> was still faster than both <code>stat</code> and <code>wc</code> in my benchmarks, and because I decided what would be printed, it offered a cleaner view into the data I cared about. Having to supply the argument every time was a bummer, but meh.</p>
+<p>Then I realized that <code>scry</code> didn't need to be a combination of <code>stat</code> and <code>wc</code>; it could just be a better <code>stat</code>. (And the better <code>wc</code> could be its own project, of course, which I plan to take on after I've finished this iteration of <code>scry</code>.)</p>
+<h2 id="the-problems-with-stat">the problems with <code>stat</code></h2>
+<p>I have three problems with <code>stat</code>:</p>
+<ol>
+<li>It provides data I don't care about.</li>
+<li>It doesn't accept piped input.</li>
+<li>It can't recursively check files within a directory.</li>
+</ol>
+<p>I'd already solved the first problem with <code>scry</code>. That left two more: accepting piped input and recursively checking files within a directory.</p>
+<h3 id="where-tf-is-my-pipe-support">where tf is my pipe support?</h3>
+<p><code>stat</code> can be told to analyze multiple files at once. I assumed this meant it would be possible for me to <code>ls | stat</code> and get the results for every file in a directory. It's not. You get this result:</p>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>ls | stat
+</span><span>stat: missing operand
+</span><span>Try &#39;stat --help&#39; for more information.
+</span></code></pre>
+<p>You can solve this problem with <code>xargs</code>:</p>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>ls | xargs stat
+</span><span>// results
+</span></code></pre>
+<p>But only if you're in the same directory. Let's say I want to check the files within a subdirectory. For this example, I'm in my &quot;notes&quot; directory and want to check the &quot;rust&quot; subdirectory that houses my notes from various learning materials:</p>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>ls rust | xargs stat
+</span><span>stat: cannot statx &#39;programming-rust-book-notes.md&#39;: No such file or directory
+</span><span>stat: cannot statx &#39;rust-atomics-and-locks-notes.md&#39;: No such file or directory
+</span><span>stat: cannot statx &#39;rust-in-action-notes.md&#39;: No such file or directory
+</span><span>stat: cannot statx &#39;rust-ownership.md&#39;: No such file or directory
+</span><span>stat: cannot statx &#39;rustlings-notes.md&#39;: No such file or directory
+</span><span>stat: cannot statx &#39;the-rust-book-notes.md&#39;: No such file or directory
+</span></code></pre>
+<p>This is only partly <code>stat</code>'s fault. <code>ls</code> doesn't return a full path for each file, so as soon as you use it to list the contents of another directory, the path for each result can no longer be inferred. Even if you use <code>ls</code> in the current working directory, however, <code>stat</code> won't accept its input without invoking <code>xargs</code>.</p>
+<p><code>scry</code> will. (And, in fact, currently doesn't support <code>xargs</code>. Whoops.) That means you can easily collect metadata about all of the files within a directory using <code>ls | scry</code>. I find that <code>scry</code>'s line-based output also results in better... erm, results when using tools like <code>ripgrep</code>, but that's a minor advantage to most workflows.</p>
+<p>But what if you want to gather info about the files in another directory?</p>
+<h3 id="lemme-peek-at-that-dir">lemme peek at that dir</h3>
+<p>If you <code>stat</code> a dir, you'll get results like this. (And this example stats the &quot;src&quot; directory of the <code>scry</code> repository because I'm using a dev version of the latter.)</p>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>stat src
+</span><span>  File: src
+</span><span>  Size: 4096            Blocks: 8          IO Block: 4096   directory
+</span><span>Device: 259,2   Inode: 44171508    Links: 2
+</span><span>Access: (0755/drwxr-xr-x)  Uid: ( 1000/    mott)   Gid: ( 1000/    mott)
+</span><span>Access: 2023-09-11 10:30:20.952159248 -0400
+</span><span>Modify: 2023-09-11 10:30:09.045534814 -0400
+</span><span>Change: 2023-09-11 10:30:09.045534814 -0400
+</span><span> Birth: 2023-07-22 10:06:38.255573416 -0400
+</span></code></pre>
+<p>That's cool! And if you <code>scry</code> that dir:</p>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>scry src
+</span><span>File:     src
+</span><span>User:     mott
+</span><span>Path:     /home/mott/projects/scry/src
+</span><span>Bytes:    4096
+</span><span>Created:  Jul 22, 2023 10:06 -04:00
+</span><span>Modified: Sep 11, 2023 10:30 -04:00
+</span><span>Accessed: Sep 11, 2023 10:30 -04:00
+</span></code></pre>
+<p>Also cool! But remember when I wanted to <code>ls</code> another directory and get information about the results? That's because <code>stat</code> can't recursively enter a directory and gather metadata about each file inside. (Or at least that's my understanding based on the <code>stat</code> man page; let me know if you've found a way to do it!)</p>
+<p><code>scry</code>, on the other hand:</p>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>scry -r src // recursive would also work
+</span><span>Name:     metadata.rs
+</span><span>Path:     /home/mott/projects/scry/src/metadata.rs
+</span><span>Type:     file
+</span><span>User:     mott
+</span><span>Bytes:    3240
+</span><span>Created:  Sep 11, 2023 13:02 -04:00
+</span><span>Modified: Sep 11, 2023 13:02 -04:00
+</span><span>Accessed: Sep 11, 2023 13:02 -04:00
+</span><span>
+</span><span>Name:     main.rs
+</span><span>Path:     /home/mott/projects/scry/src/main.rs
+</span><span>Type:     file
+</span><span>User:     mott
+</span><span>Bytes:    1263
+</span><span>Created:  Sep 11, 2023 11:22 -04:00
+</span><span>Modified: Sep 12, 2023 11:13 -04:00
+</span><span>Accessed: Sep 12, 2023 11:13 -04:00
+</span></code></pre>
+<p><code>scry</code> currently only supports one level of recursion, so if the target directory contains a subdirectory, it will return the same value as if you'd just used <code>scry &lt;SUBDIRECTORY&gt;</code>. I might add the ability to specify multiple levels of recursion, although I suspect that would be a lot of info to print all at once.</p>
+<p>(As an aside: <code>scry</code>'s results are much clearer than the equivalent <code>cd DIR &amp;&amp; ls | xargs stat</code> because of the newline; stat doesn't separate results when used on multiple files. I find that leaves an unreadable mess in my terminal window.)</p>
+<h2 id="where-stat-wins">where stat wins</h2>
+<p>There are two areas where <code>stat</code> beats <code>scry</code>:</p>
+<ol>
+<li>It's preinstalled on most (all?) distros.</li>
+<li>It can (at least attempt to) query the filesystem.</li>
+</ol>
+<p>There's nothing I can do about that first point. I'll look more into the second point in the future, but for now, if you need to <code>stat -f</code> something, <code>scry</code> doesn't offer an equivalent functionality. (Thank goodness <code>stat</code> is already on your system!)</p>
+<h2 id="a-potential-roadmap">a potential roadmap</h2>
+<p><code>scry</code> operates under the assumption that provided paths are valid UTF-8. This should be a fair assumption in the year two thousand and twenty three, but I'll look into this, even though it makes me angry and shouldn't be necessary.</p>
+<p>I plan to introduce two additional output methods before <code>scry</code> reaches 1.0: JSON and a &quot;legacy&quot; mode that emulates <code>stat</code>. The ability to support configurable output like <code>stat</code> does is also a nice-to-have but isn't currently planned.</p>
+<p>Windows support is unplanned until I can test it locally--or someone else who <em>can</em> test locally submits the necessary changes to enable support for the platform. <code>scry</code> should work on all Unix platforms, though, so please tell me if it doesn't.</p>
+<p>There are some performance optimizations I could implement--namely using a buffered writer when printing information about multiple files / directories--but as it stands <code>hyperfine</code> says that running <code>scry -r notes</code> from my home directory is approximately seven times faster than running <code>cd notes &amp;&amp; ls | xargs stat</code>. That ain't bad!</p>
+<p>(And for a completely unrealistic benchmark: <code>ls | scry</code> in a directory containing 10,244 files is approximately 48 times faster than <code>ls | xargs stat</code>. Any performance optimizations beyond that, frankly, would be more indulgent than practical.)</p>
+<h2 id="closing-thoughts">closing thoughts</h2>
+<p>I fully expected <code>scry</code> to be a quick project that I could archive right after it helped me figure out some of the conventions around writing a CLI program in Rust. My only other programming experience outside of Advent of Code is following along with the &quot;100 Days of SwiftUI&quot; course, so I had a lot to learn with this first project.</p>
+<p>I didn't expect to end up creating a tool with--if I can be allowed to brag for a moment--a more Unix-like approach (allowing piped input without <code>xargs</code>) and more features (recursive directory scanning) than a decades-old tool found in most distros. Even though <code>scry</code> has a ways to go, I'm damn pleased with this 0.5 release.</p>
+<p>The source code for <code>scry</code> can be found on my Sourcehut. (The version on my GitHub is out of date and should not be used.) I plan to make installing the tool easier in the future, but for now, it's primarily intended for anyone comfortable building it from source. </p>
+
+        </div>
+
+        
+        <div class="pagination">
+            <div class="pagination__title">
+                <span class="pagination__title-h"></span>
+                <hr />
+            </div>
+            <div class="pagination__buttons">
+                    <span class="button previous">
+                        <a href="https://www.nathanielmott.com/thinkin-bout-helix-and-neovim/">
+                            <span class="button__icon">←</span>&nbsp;
+                            <span class="button__text">thinkin&#x27; bout helix and neovim</span>
+                        </a>
+                    </span>
+                
+                </div>
+        </div>
+    
+    </div>
+
+    </div>
+
+    
+    <footer class="footer">
+        <div class="footer__inner">
+                <div class="copyright">
+                        <span>© 
+    2023
+ Nathaniel Mott</span>
+                    <span class="copyright-theme">
+                        <span class="copyright-theme-sep">:: </span>
+                        Theme: <a href="https://github.com/pawroman/zola-theme-terminimal/">Terminimal</a> by pawroman
+                    </span>
+                </div>
+            </div>
+    </footer>
+    
+
+</div>
+</body>
+
+</html>

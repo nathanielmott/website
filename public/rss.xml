@@ -7,7 +7,17 @@
       <generator>Zola</generator>
       <language>en</language>
       <atom:link href="https://www.nathanielmott.com/rss.xml" rel="self" type="application/rss+xml"/>
-      <lastBuildDate>Thu, 24 Aug 2023 00:00:00 +0000</lastBuildDate>
+      <lastBuildDate>Sat, 16 Sep 2023 00:00:00 +0000</lastBuildDate>
+      <item>
+          <title>introducing scry: a magical stat(1) clone</title>
+          <pubDate>Sat, 16 Sep 2023 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://www.nathanielmott.com/introducing-scry-a-magical-stat-clone/</link>
+          <guid>https://www.nathanielmott.com/introducing-scry-a-magical-stat-clone/</guid>
+          <description>&lt;p&gt;&lt;em&gt;tl;dr: i made a simple command-line tool!&lt;&#x2F;em&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;scry&lt;&#x2F;code&gt; is, as the title suggests, a magical &lt;code&gt;stat(1)&lt;&#x2F;code&gt; clone. This post outlines the beginning of the project, how &lt;code&gt;scry&lt;&#x2F;code&gt; differs from &lt;code&gt;stat&lt;&#x2F;code&gt;, and where I plan to go from here.&lt;&#x2F;p&gt;
+</description>
+      </item>
       <item>
           <title>thinkin&#x27; bout helix and neovim</title>
           <pubDate>Thu, 24 Aug 2023 00:00:00 +0000</pubDate>
