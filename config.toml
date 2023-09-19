@@ -17,7 +17,8 @@ highlight_code = true
 
 [extra]
 # Put all your custom variables here
-accent_color = "pink"
+accent_color = "pink-light"
+background_color = "light"
 logo_text = "nathaniel_mott"
 page_titles = "main_only"
 author = "Nathaniel Mott"
